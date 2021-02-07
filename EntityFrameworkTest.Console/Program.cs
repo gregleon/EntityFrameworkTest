@@ -64,11 +64,11 @@ namespace EntityFrameworkTest.Console
 
         private static void TestLazyLoading(bool includeUnrelatedEntities)
         {
-            var eagerLoaded = GetRoot(includeNonDateEntities: includeUnrelatedEntities, includeDateEntities: true);
-            var eagerLoadedTicks = GetDateChildrenDateTicks(eagerLoaded);
+            var rootWithEagerLoadedDateEntities = GetRoot(includeNonDateEntities: includeUnrelatedEntities, includeDateEntities: true);
+            var eagerLoadedTicks = GetDateChildrenDateTicks(rootWithEagerLoadedDateEntities);
 
-            var lazyLoaded = GetRoot(includeNonDateEntities: includeUnrelatedEntities, includeDateEntities: false);
-            var lazyLoadedTicks = GetDateChildrenDateTicks(lazyLoaded);
+            var rootWithLazyLoadedDateEntities = GetRoot(includeNonDateEntities: includeUnrelatedEntities, includeDateEntities: false);
+            var lazyLoadedTicks = GetDateChildrenDateTicks(rootWithLazyLoadedDateEntities);
 
             if (!lazyLoadedTicks.SequenceEqual(eagerLoadedTicks))
             {
