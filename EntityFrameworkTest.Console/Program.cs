@@ -32,27 +32,7 @@ namespace EntityFrameworkTest.Console
             context.Roots.Add(root);
             context.SaveChanges();
         }
-
-        private static void CopyRootToParent()
-        {
-            var context = new TestDbContext();
-            var root = context.Roots.First();
-
-            root.ParentRoot = new Root()
-            {
-                DateChildren = new List<DateChild>()
-                {
-                    new DateChild()
-                    {
-                        CreateDate = root.DateChildren.First().CreateDate
-                    }
-                },
-                AnyEntityID = root.AnyEntityID
-            };
-
-            context.SaveChanges();
-        }
-
+        
         private static Root GetRoot(bool includeNonDateEntities, bool includeDateEntities)
         {
             var context = new TestDbContext();
@@ -78,8 +58,8 @@ namespace EntityFrameworkTest.Console
 
         private static List<long> GetDateChildrenDateTicks(Root root)
         {
-            // get datetime values from root and root parent 'date children' and convert them to ticks
-            return root.DateChildren.Select(c => c.CreateDate.Ticks).Concat(root.ParentRoot.DateChildren.Select(c => c.CreateDate.Ticks)).ToList();
+            // get datetime values from 'date children' and convert them to ticks
+            return root.DateChildren.Select(c => c.CreateDate.Ticks).ToList();
         }
 
         private static void TestLazyLoading(bool includeUnrelatedEntities)
@@ -90,7 +70,7 @@ namespace EntityFrameworkTest.Console
             var lazyLoaded = GetRoot(includeNonDateEntities: includeUnrelatedEntities, includeDateEntities: false);
             var lazyLoadedTicks = GetDateChildrenDateTicks(lazyLoaded);
 
-            if (lazyLoadedTicks.Distinct().Count() != eagerLoadedTicks.Distinct().Count())
+            if (!lazyLoadedTicks.SequenceEqual(eagerLoadedTicks))
             {
                 var tickValues = lazyLoadedTicks.Concat(eagerLoadedTicks).Distinct();
                 System.Console.WriteLine($@"Dates had different values and they were: {string.Join(", ", tickValues)}");
@@ -108,10 +88,9 @@ namespace EntityFrameworkTest.Console
             if (!context.Roots.Any())
             {
                 AddRoot();
-                CopyRootToParent();
             }
 
-            System.Console.WriteLine(@"Running test without including non date entities:");
+            System.Console.WriteLine(@"Running test when non date entities are NOT included:");
             // Test console output: Dates had a single value and it was: 637480200495470000
             TestLazyLoading(includeUnrelatedEntities: false);
             
